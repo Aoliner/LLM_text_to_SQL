@@ -1,0 +1,120 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NLQ to SQL Console</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../static/css/main.css">
+</head>
+<body>
+
+<main class="workspace">
+  <header class="topbar">
+    <div class="title">
+      <h1>Natural query to SQL workspace</h1>
+      <p>Draft a business question, review the model explanation, inspect the generated query, then run it against the database.</p>
+    </div>
+  </header>
+
+  <section class="user-input">
+    <div class="panel">
+      <form method="POST">
+        <div class="panel-head">
+          <div>
+            <h2>Natural language request</h2>
+            <p>Write what you want from the data in plain language.</p>
+          </div>
+          <button class="btn" type="submit" name="action" value="generate">Generate query</button>
+        </div>
+        <div class="prompt-wrap">
+          <textarea
+            name="query"
+            aria-label="Natural language query"
+            placeholder="What are the top 5 longest tracks?"
+          >{{ user_query }}</textarea>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="main-grid">
+    <!-- LLM Comment Panel -->
+    <div class="panel llm-panel">
+      <div class="panel-head">
+        <div>
+          <h2>LLM comment</h2>
+          <p>Assumptions, comments, clarifications from the language model.</p>
+        </div>
+      </div>
+      <div class="comment-box">
+        {% if llm_comment %}
+          <p>{{ llm_comment }}</p>
+        {% else %}
+          <p>Generate a query first.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Generated SQL Panel -->
+    <div class="panel sql-panel">
+      <form method="POST">
+        <div class="panel-head">
+          <div>
+            <h2>Generated query</h2>
+            <p>Inspect the SQL before running it.</p>
+          </div>
+          <button class="btn" type="submit">Execute query</button>
+        </div>
+        <input type="hidden" name="action" value="execute">
+        <input type="hidden" name="query" value="{{ user_query }}">
+        <input type="hidden" name="generated_sql" value="{{ generated_sql }}">
+        <input type="hidden" name="llm_comment" value="{{ llm_comment }}">
+        <pre class="code-box" aria-label="Generated SQL"><code>{{ generated_sql | e }}</code></pre>
+      </form>
+    </div>
+
+    <!-- Results Panel -->
+    <div class="panel result-panel">
+      <div class="result-top">
+        <div class="panel-head">
+          <h2>Query result</h2>
+          <p>Returned table from the target database.</p>
+        </div>
+        <div class="meta-row">
+          <span>Rows: {{ row_count or 0 }}</span>
+          <span>Executed in: {{ execution_time_ms or 0}} ms</span>   
+        </div>
+      </div>
+
+      {% if has_error %}
+      <p class="error">{{ error }}</p>
+      {% elif rows %}
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                {% for col in columns %}
+                  <th>{{ col }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in rows %}
+                <tr>
+                  {% for cell in row %}
+                    <td>{{ cell }}</td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+      <p>Enter a question, generate SQL, then execute it.</p>
+      {% endif %}
+    </div>
+  </section>
+</main>
+
+</body>
+</html>
