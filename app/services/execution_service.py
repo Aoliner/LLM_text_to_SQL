@@ -3,12 +3,14 @@ from ..db import get_connection
 
 
 def execute_query(generated_sql: str, database_url: str, ssl_root_cert: str) -> dict:
+    MAX_ROWS = 500
     conn = get_connection(database_url, ssl_root_cert)
     try:
         with conn.cursor() as cur:
             start = time.perf_counter()
+            cur.execute("SET statement_timeout = 6000;")
             cur.execute(generated_sql)
-            rows = cur.fetchall()
+            rows = cur.fetchmany(MAX_ROWS)
             end = time.perf_counter()
 
             return {

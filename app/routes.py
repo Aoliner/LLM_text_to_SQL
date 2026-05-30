@@ -16,7 +16,7 @@ def home():
             row_count=0,
             rows=None,
             columns=None,
-            generated_sql=None,
+            generated_sql="",
             llm_comment=None,
             user_query="",
             has_error=False,

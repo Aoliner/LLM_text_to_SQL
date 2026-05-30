@@ -28,7 +28,7 @@ Allowed first-line comment types:
 -- COMMENT: <short note>
 -- CLARIFY: <specific question needed to write the query>
 -- CANNOT_ANSWER: <short reason>
--- UNSAFE_REQUEST
+-- UNSAFE_REQUEST: <short reason>
 
 # SQL policy
 - Generate exactly one read-only SELECT statement.
@@ -43,7 +43,7 @@ Allowed first-line comment types:
 
 # Decision rules
 - If the user asks for any write or schema-changing action, return only:
--- UNSAFE_REQUEST
+-- UNSAFE_REQUEST: <short reason>
 - If the request cannot be answered from the schema, return:
 -- CANNOT_ANSWER: <short reason>
 - If the request is ambiguous in a way that affects the SQL, return:
@@ -83,7 +83,7 @@ Assistant:
 <example>
 User: Update customer email addresses to lowercase
 Assistant:
--- UNSAFE_REQUEST
+-- UNSAFE_REQUEST: updating data is not allowed
 </example>
 
 <example>

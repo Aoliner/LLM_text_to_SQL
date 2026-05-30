@@ -67,8 +67,12 @@
         </div>
         <input type="hidden" name="action" value="execute">
         <input type="hidden" name="query" value="{{ user_query }}">
-        <input type="hidden" name="generated_sql" value="{{ generated_sql }}">
-        <input type="hidden" name="llm_comment" value="{{ llm_comment }}">
+        <textarea hidden name="generated_sql">
+        {{ generated_sql }}
+        </textarea>
+        <textarea hidden name="llm_comment">
+        {{ llm_comment }}
+        </textarea>
         <pre class="code-box" aria-label="Generated SQL"><code>{{ generated_sql | e }}</code></pre>
       </form>
     </div>

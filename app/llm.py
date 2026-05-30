@@ -26,7 +26,7 @@ def generate_sql(client, system_message: str, user_request: str):
         model="gpt-5.4-mini",
         temperature=0.0,
         messages=[
-            {"role": "system", "content": system_message},
+            {"role": "developer", "content": system_message},
             {"role": "user", "content": user_request}
         ]
     )

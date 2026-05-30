@@ -37,9 +37,12 @@ def validate_read_only_sql(query: str) -> tuple[bool, str]:
         exp.Merge,
         exp.Copy,
         exp.Command,
+        exp.Lock,
+        exp.Grant,
+        exp.Revoke
     )
 
-    bad_node = next(stmt.find_all(forbidden), None)
+    bad_node = next(stmt.find_all(*forbidden), None)
     if bad_node:
         return False, f"Forbidden SQL operation detected: {bad_node.key}"
 
