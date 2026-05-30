@@ -68,7 +68,7 @@
         <input type="hidden" name="action" value="execute">
         <input type="hidden" name="query" value="{{ user_query }}">
         <textarea hidden name="generated_sql">
-        {{ generated_sql }}
+        {{- generated_sql|trim -}}
         </textarea>
         <textarea hidden name="llm_comment">
         {{ llm_comment }}

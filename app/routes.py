@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, current_app
 
-from .dependencies import client, database_url, ssl_root_cert, prompt_context
+from .dependencies import get_client, get_prompt_context
 from .services.query_service import generate_query_result
 from .services.execution_service import execute_query
 
@@ -27,6 +27,9 @@ def home():
     action = request.form.get("action")
 
     if action == "generate":
+        client = get_client()
+        prompt_context = get_prompt_context()
+
         result = generate_query_result(
             user_request=user_request,
             client=client,
@@ -57,8 +60,8 @@ def home():
 
         execution_result = execute_query(
             generated_sql=generated_sql,
-            database_url=database_url,
-            ssl_root_cert=ssl_root_cert,
+            database_url=current_app.config["DATABASE_URL"],
+            ssl_root_cert=current_app.config["SSL_ROOT_CERT"],
         )
 
         result.update(execution_result)

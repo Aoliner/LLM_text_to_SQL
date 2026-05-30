@@ -1,9 +1,8 @@
-import os
 import re
 from openai import OpenAI
 
-def create_client():
-    return OpenAI(api_key=os.getenv("openai_api_key"))
+def create_client(api_key: str):
+    return OpenAI(api_key=api_key)
 
 def parse_llm_response(response_text: str) -> tuple[str, str]:
     response_text = response_text.strip()
