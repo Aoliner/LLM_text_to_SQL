@@ -31,19 +31,28 @@ code {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-strong) 100%);
   color: #071316;
   font-weight: 700;
-}
-
-.btn {
   cursor: pointer;
   transition:
     transform var(--transition),
     opacity var(--transition),
     background var(--transition),
-    border-color var(--transition);
+    border-color var(--transition),
+    color var(--transition);
 }
 
-.btn:hover {
+.btn:not(:disabled):hover {
   transform: translateY(-1px);
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: .55;
+  transform: none;
+  background: linear-gradient(135deg, #4d5a60 0%, #3d474c 100%);
+  color: rgba(255, 255, 255, 0.72);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
 }
 
 @media (max-width: 720px) {

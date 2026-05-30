@@ -63,16 +63,17 @@
             <h2>Generated query</h2>
             <p>Inspect the SQL before running it.</p>
           </div>
-          <button class="btn" type="submit">Execute query</button>
+          <button
+            class="btn"
+            type="submit"
+            {% if status != "ready" %}disabled aria-disabled="true"{% endif %}>
+                Execute query
+              </button>
         </div>
         <input type="hidden" name="action" value="execute">
         <input type="hidden" name="query" value="{{ user_query }}">
-        <textarea hidden name="generated_sql">
-        {{- generated_sql|trim -}}
-        </textarea>
-        <textarea hidden name="llm_comment">
-        {{ llm_comment }}
-        </textarea>
+        <textarea hidden name="generated_sql">{{ generated_sql | trim }}</textarea>
+        <textarea hidden name="llm_comment">{{ llm_comment or "" }}</textarea>
         <pre class="code-box" aria-label="Generated SQL"><code>{{ generated_sql | e }}</code></pre>
       </form>
     </div>
