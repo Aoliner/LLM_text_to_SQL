@@ -183,3 +183,8 @@ cython_debug/
 #Certificate folder
 certs/
 
+# Logs
+logs/
+*.log
+*.jsonl
+

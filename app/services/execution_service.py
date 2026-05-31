@@ -26,5 +26,5 @@ def execute_query(generated_sql: str, database_url: str, ssl_root_cert: str) -> 
             "error": f"Execution error: {e}",
         }
     finally:
-        if conn is not None:  # ← only close if it was opened
+        if conn is not None:  
             conn.close()
