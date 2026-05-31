@@ -4,15 +4,15 @@ from ..db import get_connection
 
 def execute_query(generated_sql: str, database_url: str, ssl_root_cert: str) -> dict:
     MAX_ROWS = 500
-    conn = get_connection(database_url, ssl_root_cert)
+    conn = None  
     try:
+        conn = get_connection(database_url, ssl_root_cert)
         with conn.cursor() as cur:
             start = time.perf_counter()
             cur.execute("SET statement_timeout = 6000;")
             cur.execute(generated_sql)
             rows = cur.fetchmany(MAX_ROWS)
             end = time.perf_counter()
-
             return {
                 "rows": rows,
                 "columns": [desc[0] for desc in cur.description] if cur.description else [],
@@ -22,11 +22,10 @@ def execute_query(generated_sql: str, database_url: str, ssl_root_cert: str) -> 
             }
     except Exception as e:
         return {
-            "rows": None,
-            "columns": None,
-            "row_count": 0,
+            "rows": None, "columns": None, "row_count": 0,
             "execution_time_ms": None,
-            "error": f"Execution error: {str(e)}",
+            "error": f"Execution error: {e}",
         }
     finally:
-        conn.close()
+        if conn is not None:  # ← only close if it was opened
+            conn.close()

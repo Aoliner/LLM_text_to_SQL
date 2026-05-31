@@ -1,5 +1,5 @@
 import json
-
+import psycopg2
 RELATIONSHIPS_SQL = """
 SELECT
     tc.constraint_name,
@@ -31,9 +31,12 @@ WHERE table_schema = 'public'
 
 def load_relationships(conn):
     relationships = []
-    with conn.cursor() as cur:
-        cur.execute(RELATIONSHIPS_SQL)
-        rows = cur.fetchall()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(RELATIONSHIPS_SQL)
+            rows = cur.fetchall()
+    except psycopg2.Error as e:
+        raise RuntimeError(f"Failed to load relationships: {e}") from e
 
     for constraint_name, child_table, child_column, parent_table, parent_column in rows:
         relationships.append({
@@ -47,10 +50,13 @@ def load_relationships(conn):
 
 def load_schema_info(conn):
     schema_info = {}
-    with conn.cursor() as cur:
-        cur.execute("SET statement_timeout = 5000;")
-        cur.execute(COLUMNS_SQL)
-        rows = cur.fetchall()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SET statement_timeout = 5000;")
+            cur.execute(COLUMNS_SQL)
+            rows = cur.fetchall()
+    except psycopg2.Error as e:
+        raise RuntimeError(f"Failed to load schema info: {e}") from e
 
     for table_name, column_name, data_type, is_nullable in rows:
         schema_info.setdefault(table_name, []).append({

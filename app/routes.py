@@ -8,6 +8,22 @@ from .sql_validation import validate_read_only_sql
 bp = Blueprint("main", __name__)
 
 
+def _error_result(user_request: str, error: str) -> dict:
+    return {
+        "user_query": user_request,
+        "sql": None,
+        "generated_sql": "",
+        "llm_comment": None,
+        "status": "error",
+        "has_error": True,
+        "error": error,
+        "row_count": 0,
+        "execution_time_ms": None,
+        "rows": None,
+        "columns": None,
+    }
+
+
 @bp.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "GET":
@@ -29,8 +45,14 @@ def home():
     action = request.form.get("action")
 
     if action == "generate":
-        client = get_client()
-        prompt_context = get_prompt_context()
+        try:
+            client = get_client()
+            prompt_context = get_prompt_context()
+        except Exception as e:
+            return render_template(
+                "index.html",
+                **_error_result(user_request, f"Initialization error: {e}"),
+            )
 
         result = generate_query_result(
             user_request=user_request,
@@ -82,18 +104,6 @@ def home():
             result["status"] = "error"
 
     else:
-        result = {
-            "user_query": user_request,
-            "sql": None,
-            "generated_sql": "",
-            "llm_comment": None,
-            "status": "error",
-            "has_error": True,
-            "error": "Invalid action.",
-            "row_count": 0,
-            "execution_time_ms": None,
-            "rows": None,
-            "columns": None,
-        }
+        result = _error_result(user_request, "Invalid action.")
 
     return render_template("index.html", **result)

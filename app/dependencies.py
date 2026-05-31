@@ -15,9 +15,12 @@ def get_client():
 def get_prompt_context():
     prompt_context = current_app.extensions.get("prompt_context")
     if prompt_context is None:
-        prompt_context = build_prompt_context(
-            current_app.config["DATABASE_URL"],
-            current_app.config["SSL_ROOT_CERT"],
-        )
+        try:
+            prompt_context = build_prompt_context(
+                current_app.config["DATABASE_URL"],
+                current_app.config["SSL_ROOT_CERT"],
+            )
+        except Exception as e:
+            raise RuntimeError(f"Failed to load schema context: {e}") from e
         current_app.extensions["prompt_context"] = prompt_context
     return prompt_context

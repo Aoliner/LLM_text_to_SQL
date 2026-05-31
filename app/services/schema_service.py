@@ -4,12 +4,14 @@ from ..prompts import build_business_rules_text, build_system_message
 
 
 def build_prompt_context(database_url: str, ssl_root_cert: str) -> dict:
-    conn = get_connection(database_url, ssl_root_cert)
+    conn = None
     try:
+        conn = get_connection(database_url, ssl_root_cert)
         relationships = load_relationships(conn)
         schema_info = load_schema_info(conn)
     finally:
-        conn.close()
+        if conn is not None:
+            conn.close()
 
     schema_json = build_schema_json(schema_info)
     business_rules_text = build_business_rules_text()
