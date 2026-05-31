@@ -1,6 +1,7 @@
 from ..safety import validate_user_prompt, detect_prompt_injection, sanitize_user_prompt
 from ..llm import parse_llm_response, generate_sql
 from ..sql_validation import validate_read_only_sql
+from ..logging.audit_logger import log_generate_request, log_generate_response
 
 
 def generate_query_result(user_request: str, client, system_message: str) -> dict:
@@ -33,12 +34,26 @@ def generate_query_result(user_request: str, client, system_message: str) -> dic
 
     safe_user_request = sanitize_user_prompt(user_request)
 
+    log_generate_request(
+        user_query=user_request,
+        sanitized_query=safe_user_request,
+    )
+
     try:
         raw_llm_response = generate_sql(client, system_message, safe_user_request)
     except Exception as e:
         base_result["has_error"] = True
         base_result["status"] = "error"
         base_result["error"] = f"Model error: {str(e)}"
+
+        log_generate_response(
+            user_query=user_request,
+            llm_comment="",
+            raw_llm_response="",
+            generated_sql="",
+            status=base_result["status"],
+            error=base_result["error"],
+        )
         return base_result
 
     llm_comment, generated_sql = parse_llm_response(raw_llm_response)
@@ -55,11 +70,29 @@ def generate_query_result(user_request: str, client, system_message: str) -> dic
             base_result["status"] = "error"
             base_result["error"] = "Malformed model response: UNSAFE_REQUEST must not include SQL."
             base_result["generated_sql"] = ""
+
+            log_generate_response(
+                user_query=user_request,
+                llm_comment=llm_comment,
+                raw_llm_response=raw_llm_response,
+                generated_sql="",
+                status=base_result["status"],
+                error=base_result["error"],
+            )
             return base_result
 
         base_result["has_error"] = True
         base_result["status"] = "unsafe"
         base_result["error"] = "Unsafe request blocked."
+
+        log_generate_response(
+            user_query=user_request,
+            llm_comment=llm_comment,
+            raw_llm_response=raw_llm_response,
+            generated_sql="",
+            status=base_result["status"],
+            error=base_result["error"],
+        )
         return base_result
 
     if llm_comment.startswith("-- CLARIFY:"):
@@ -68,9 +101,27 @@ def generate_query_result(user_request: str, client, system_message: str) -> dic
             base_result["status"] = "error"
             base_result["error"] = "Malformed model response: CLARIFY must not include SQL."
             base_result["generated_sql"] = ""
+
+            log_generate_response(
+                user_query=user_request,
+                llm_comment=llm_comment,
+                raw_llm_response=raw_llm_response,
+                generated_sql="",
+                status=base_result["status"],
+                error=base_result["error"],
+            )
             return base_result
 
         base_result["status"] = "clarify"
+
+        log_generate_response(
+            user_query=user_request,
+            llm_comment=llm_comment,
+            raw_llm_response=raw_llm_response,
+            generated_sql="",
+            status=base_result["status"],
+            error=None,
+        )
         return base_result
 
     if llm_comment.startswith("-- CANNOT_ANSWER:"):
@@ -79,9 +130,27 @@ def generate_query_result(user_request: str, client, system_message: str) -> dic
             base_result["status"] = "error"
             base_result["error"] = "Malformed model response: CANNOT_ANSWER must not include SQL."
             base_result["generated_sql"] = ""
+
+            log_generate_response(
+                user_query=user_request,
+                llm_comment=llm_comment,
+                raw_llm_response=raw_llm_response,
+                generated_sql="",
+                status=base_result["status"],
+                error=base_result["error"],
+            )
             return base_result
 
         base_result["status"] = "cannot_answer"
+
+        log_generate_response(
+            user_query=user_request,
+            llm_comment=llm_comment,
+            raw_llm_response=raw_llm_response,
+            generated_sql="",
+            status=base_result["status"],
+            error=None,
+        )
         return base_result
 
     if llm_comment.startswith("-- COMMENT:"):
@@ -89,6 +158,15 @@ def generate_query_result(user_request: str, client, system_message: str) -> dic
             base_result["has_error"] = True
             base_result["status"] = "error"
             base_result["error"] = "No valid SQL generated."
+
+            log_generate_response(
+                user_query=user_request,
+                llm_comment=llm_comment,
+                raw_llm_response=raw_llm_response,
+                generated_sql="",
+                status=base_result["status"],
+                error=base_result["error"],
+            )
             return base_result
 
         is_valid, validation_message = validate_read_only_sql(generated_sql)
@@ -96,12 +174,39 @@ def generate_query_result(user_request: str, client, system_message: str) -> dic
             base_result["has_error"] = True
             base_result["status"] = "error"
             base_result["error"] = validation_message
+
+            log_generate_response(
+                user_query=user_request,
+                llm_comment=llm_comment,
+                raw_llm_response=raw_llm_response,
+                generated_sql=generated_sql,
+                status=base_result["status"],
+                error=base_result["error"],
+            )
             return base_result
 
         base_result["status"] = "ready"
+
+        log_generate_response(
+            user_query=user_request,
+            llm_comment=llm_comment,
+            raw_llm_response=raw_llm_response,
+            generated_sql=generated_sql,
+            status=base_result["status"],
+            error=None,
+        )
         return base_result
 
     base_result["has_error"] = True
     base_result["status"] = "error"
     base_result["error"] = "Unexpected model response type."
+
+    log_generate_response(
+        user_query=user_request,
+        llm_comment=llm_comment,
+        raw_llm_response=raw_llm_response,
+        generated_sql=generated_sql,
+        status=base_result["status"],
+        error=base_result["error"],
+    )
     return base_result

@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, current_app
 
+from .logging.audit_logger import log_execute_request, log_execute_response
 from .dependencies import get_client, get_prompt_context
 from .services.query_service import generate_query_result
 from .services.execution_service import execute_query
@@ -79,10 +80,24 @@ def home():
             "columns": None,
         }
 
+        log_execute_request(
+            user_query=user_request,
+            generated_sql=generated_sql,
+            llm_comment=llm_comment,
+        )
+
         if not generated_sql.strip():
             result["has_error"] = True
             result["status"] = "error"
             result["error"] = "No SQL query to execute."
+
+            log_execute_response(
+                user_query=user_request,
+                generated_sql=generated_sql,
+                row_count=0,
+                execution_time_ms=None,
+                error=result["error"],
+            )
             return render_template("index.html", **result)
 
         is_valid, validation_message = validate_read_only_sql(generated_sql)
@@ -90,6 +105,14 @@ def home():
             result["has_error"] = True
             result["status"] = "error"
             result["error"] = validation_message
+
+            log_execute_response(
+                user_query=user_request,
+                generated_sql=generated_sql,
+                row_count=0,
+                execution_time_ms=None,
+                error=result["error"],
+            )
             return render_template("index.html", **result)
 
         execution_result = execute_query(
@@ -103,6 +126,14 @@ def home():
 
         if result["has_error"]:
             result["status"] = "error"
+
+        log_execute_response(
+            user_query=user_request,
+            generated_sql=generated_sql,
+            row_count=result["row_count"],
+            execution_time_ms=result["execution_time_ms"],
+            error=result["error"],
+        )
 
     else:
         result = _error_result(user_request, "Invalid action.")

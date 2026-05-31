@@ -2,6 +2,9 @@ from flask import Flask
 from .routes import bp
 from .config import Config
 from .llm import create_client
+from .logging.logging_config import configure_logging
+
+configure_logging()
 
 def create_app():
     app = Flask(__name__, template_folder="../templates", static_folder="../static")
