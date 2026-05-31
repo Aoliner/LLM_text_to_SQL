@@ -12,7 +12,11 @@ def build_business_rules_text():
 - The database is for analytical read-only questions, not operational updates.
 """.strip()
 
-def build_system_message(schema_json: str, business_rules_text: str) -> str:
+def build_system_message(
+    schema_json: str,
+    relationships_json: str,
+    business_rules_text: str,
+) -> str:
     return f"""
 # Role
 You translate a user's analytics question into one valid read-only PostgreSQL query using only the provided schema and business rules.
@@ -53,6 +57,9 @@ Allowed first-line comment types:
 
 # Schema
 {schema_json}
+
+# Relationships
+{relationships_json}
 
 # Business rules
 {business_rules_text}

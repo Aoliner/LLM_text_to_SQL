@@ -4,7 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NLQ to SQL Console</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../static/css/main.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
 
@@ -72,9 +72,9 @@
         </div>
         <input type="hidden" name="action" value="execute">
         <input type="hidden" name="query" value="{{ user_query }}">
-        <textarea hidden name="generated_sql">{{ generated_sql | trim }}</textarea>
-        <textarea hidden name="llm_comment">{{ llm_comment or "" }}</textarea>
-        <pre class="code-box" aria-label="Generated SQL"><code>{{ generated_sql | e }}</code></pre>
+<textarea hidden name="generated_sql">{{ generated_sql | trim }}</textarea>
+<textarea hidden name="llm_comment">{{ llm_comment or "" }}</textarea>
+<pre class="code-box" aria-label="Generated SQL"><code>{{ generated_sql | e }}</code></pre>
       </form>
     </div>
 

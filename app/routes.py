@@ -11,7 +11,7 @@ bp = Blueprint("main", __name__)
 def _error_result(user_request: str, error: str) -> dict:
     return {
         "user_query": user_request,
-        "sql": None,
+        "raw_llm_response": "",
         "generated_sql": "",
         "llm_comment": None,
         "status": "error",
@@ -34,6 +34,7 @@ def home():
             row_count=0,
             rows=None,
             columns=None,
+            raw_llm_response="",
             generated_sql="",
             llm_comment=None,
             user_query="",
@@ -66,7 +67,7 @@ def home():
 
         result = {
             "user_query": user_request,
-            "sql": generated_sql,
+            "raw_llm_response": "",
             "generated_sql": generated_sql,
             "llm_comment": llm_comment,
             "status": "ready",

@@ -6,7 +6,7 @@ from ..sql_validation import validate_read_only_sql
 def generate_query_result(user_request: str, client, system_message: str) -> dict:
     base_result = {
         "user_query": user_request,
-        "sql": None,
+        "raw_llm_response": "",
         "llm_comment": None,
         "generated_sql": "",
         "status": "error",
@@ -34,16 +34,16 @@ def generate_query_result(user_request: str, client, system_message: str) -> dic
     safe_user_request = sanitize_user_prompt(user_request)
 
     try:
-        full_response = generate_sql(client, system_message, safe_user_request)
+        raw_llm_response = generate_sql(client, system_message, safe_user_request)
     except Exception as e:
         base_result["has_error"] = True
         base_result["status"] = "error"
         base_result["error"] = f"Model error: {str(e)}"
         return base_result
 
-    llm_comment, generated_sql = parse_llm_response(full_response)
+    llm_comment, generated_sql = parse_llm_response(raw_llm_response)
 
-    base_result["sql"] = full_response
+    base_result["raw_llm_response"] = raw_llm_response
     base_result["llm_comment"] = llm_comment
     base_result["generated_sql"] = generated_sql
 

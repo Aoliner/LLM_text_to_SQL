@@ -1,3 +1,5 @@
+import json
+
 from ..db import get_connection
 from ..schema import load_relationships, load_schema_info, build_schema_json
 from ..prompts import build_business_rules_text, build_system_message
@@ -14,11 +16,17 @@ def build_prompt_context(database_url: str, ssl_root_cert: str) -> dict:
             conn.close()
 
     schema_json = build_schema_json(schema_info)
+    relationships_json = json.dumps(relationships, indent=2)
     business_rules_text = build_business_rules_text()
-    system_message = build_system_message(schema_json, business_rules_text)
+    system_message = build_system_message(
+        schema_json=schema_json,
+        relationships_json=relationships_json,
+        business_rules_text=business_rules_text,
+    )
 
     return {
         "relationships": relationships,
+        "relationships_json": relationships_json,
         "schema_info": schema_info,
         "schema_json": schema_json,
         "business_rules_text": business_rules_text,
